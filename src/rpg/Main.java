@@ -1,4 +1,4 @@
-package com.company;
+package rpg;
 
 import java.util.Map;
 import java.util.Optional;

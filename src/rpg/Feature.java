@@ -1,4 +1,4 @@
-package com.company;
+package rpg;
 
 public class Feature {
     private String name;

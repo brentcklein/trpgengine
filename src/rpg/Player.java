@@ -1,4 +1,4 @@
-package com.company;
+package rpg;
 
 import java.util.HashSet;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.company;
+package rpg;
 
 public class State {
     public Room currentRoom;

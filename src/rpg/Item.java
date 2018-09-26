@@ -1,7 +1,6 @@
-package com.company;
+package rpg;
 
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class Item extends Feature {
     public Item(String name, String description, String longDescription) {
