@@ -1,10 +1,15 @@
 package com.company;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class Item extends Feature {
     public Item(String name, String description, String longDescription) {
         super(name, description, longDescription);
+    }
+
+    public Item(String name, String description, String detailedDescription, Actionable consumer) {
+        super(name, description, detailedDescription, consumer);
     }
 
     public void take(ActionSet actionSet, State s) {

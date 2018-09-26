@@ -167,7 +167,8 @@ public class Main {
         start.addFeature(new Item(
                 "kazoo",
                 "There is a kazoo on the floor.",
-                "A red kazoo. It's a little dusty."
+                "A red kazoo. It's a little dusty.",
+                (feature, actionSet, state) -> {System.out.println("this is the runnable");}
         ) {
             @Override
             public void use(ActionSet actionSet, State s) {

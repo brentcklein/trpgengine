@@ -1,0 +1,26 @@
+{
+  "name": "startRoom",
+  "description": "this is the room you start in",
+  "exits": [{
+    "direction": "north",
+    "destination": "nextRoom"
+  }],
+  "features": [
+    {
+      "name": "chair",
+      "behavior": {
+        "verb": "sit",
+        "output": "You sat.",
+        "doOtherStuff": "set isActivated to true somehow"
+      }
+    }
+  ],
+  "items": [{
+      "name": "watch",
+      "behavior": {
+        "verb": "look",
+        "output": "watch.getTime()",
+        "doOtherStuff": "wind the watch?"
+      }
+    }]
+}
