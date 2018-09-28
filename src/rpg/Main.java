@@ -40,7 +40,7 @@ public class Main {
         );
         Room oubliette = new Room(
                 "You are in an oubliette.",
-                "Fight light is coming through a hole in the ceiling. You scream, but no one hears you..."
+                "Faint light is coming through a hole in the ceiling. You scream, but no one hears you..."
         ) {
             @Override
             public void goTo(ActionSet actionSet, State s) {
@@ -167,8 +167,7 @@ public class Main {
         start.addFeature(new Item(
                 "kazoo",
                 "There is a kazoo on the floor.",
-                "A red kazoo. It's a little dusty.",
-                (feature, actionSet, state) -> {System.out.println("this is the runnable");}
+                "A red kazoo. It's a little dusty."
         ) {
             @Override
             public void use(ActionSet actionSet, State s) {
@@ -181,15 +180,6 @@ public class Main {
                     s.player.removeItem(this);
                 }
             }
-
-            @Override
-            public void act(ActionSet actionSet, State s) {
-                if (actionSet.getVerbOptional().get().equals("play")) {
-                    this._use(actionSet, s);
-                } else {
-                    super.act(actionSet, s);
-                }
-            }
         });
         start.addFeature(new Feature(
                 "door",
@@ -197,7 +187,7 @@ public class Main {
                 "A sturdy wooden door, banded with iron. It's locked."
         ) {
             @Override
-            public void act(ActionSet actionSet, State s) {
+            public void use(ActionSet actionSet, State s) {
                 if (actionSet.getVerbOptional().get().equals("unlock")) {
                     Optional<Item> keyOptional = s.player.getItem("key");
                     if (keyOptional.isPresent()) {
@@ -206,7 +196,7 @@ public class Main {
                         System.out.println("You don't have anything to unlock it with.");
                     }
                 } else {
-                    super.act(actionSet, s);
+                    super.use(actionSet, s);
                 }
             }
 
@@ -247,7 +237,7 @@ public class Main {
                 "It's an unlit torch."
         ) {
             @Override
-            public void act(ActionSet actionSet, State s) {
+            public void use(ActionSet actionSet, State s) {
                 if (actionSet.getVerbOptional().get().equals("light")) {
                     if (isActivated()) {
                         System.out.println("It's already lit.");
@@ -260,17 +250,12 @@ public class Main {
                         }
                     }
                 } else {
-                    super.act(actionSet, s);
-                }
-            }
-
-            @Override
-            public void use(ActionSet actionSet, State s) {
-                Optional<String> objectOptional = actionSet.getObjectOptional();
-                if (objectOptional.isPresent()) {
-                    this.useOn(actionSet, s);
-                } else {
-                    super.use(actionSet, s);
+                    Optional<String> objectOptional = actionSet.getObjectOptional();
+                    if (objectOptional.isPresent()) {
+                        this.useOn(actionSet, s);
+                    } else {
+                        super.use(actionSet, s);
+                    }
                 }
             }
 
@@ -319,10 +304,10 @@ public class Main {
         cell2.addFeature(new Feature(
                 "obstacle",
                 "An obstacle sits against the far wall.",
-                "It's an obstacle. You should probably try to push it."
+                "It's an obstacle. You should probably try to move it."
         ) {
             @Override
-            public void act(ActionSet actionSet, State s) {
+            public void use(ActionSet actionSet, State s) {
                 if (
                     actionSet.getVerbOptional().get().equals("move") ||
                     actionSet.getVerbOptional().get().equals("push")
@@ -333,7 +318,7 @@ public class Main {
                     s.currentRoom.setDetailedDescription("The broken remains of a wooden cot stand against one wall. " +
                             "There's a small hole in the far wall you could probably crawl through.");
                 } else {
-                    super.act(actionSet, s);
+                    super.use(actionSet, s);
                 }
             }
         });
@@ -351,23 +336,16 @@ public class Main {
 
             @Override
             public void use(ActionSet actionSet, State s) {
-                if (actionSet.getObjectOptional().isPresent()) {
+                if (
+                    (actionSet.getVerbOptional().get().equals("use") ||
+                        actionSet.getVerbOptional().get().equals("put") ||
+                        actionSet.getVerbOptional().get().equals("place") ||
+                        actionSet.getVerbOptional().get().equals("set")) &&
+                    actionSet.getObjectOptional().isPresent())
+                {
                     this.useOn(actionSet, s);
                 } else {
                     super.use(actionSet, s);
-                }
-            }
-
-            @Override
-            public void act(ActionSet actionSet, State s) {
-                if (
-                        actionSet.getVerbOptional().get().equals("put") ||
-                        actionSet.getVerbOptional().get().equals("place") ||
-                        actionSet.getVerbOptional().get().equals("set"))
-                {
-                    this.use(actionSet,s);
-                } else {
-                    super.act(actionSet, s);
                 }
             }
         });
@@ -480,9 +458,9 @@ public class Main {
                         default:
                             // How do we make sure we don't run into collisions between the names of items and features?
                             if (optionalFeature.isPresent()) {
-                                optionalFeature.get().act(actionSet, s);
+                                optionalFeature.get().use(actionSet, s);
                             } else if (optionalInventoryItem.isPresent()) {
-                                optionalInventoryItem.get().act(actionSet, s);
+                                optionalInventoryItem.get().use(actionSet, s);
                             } else {
                                 System.out.println("You can't do that."); // redundant with line 254. how to combine?
                             }

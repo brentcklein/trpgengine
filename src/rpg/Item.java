@@ -7,10 +7,6 @@ public class Item extends Feature {
         super(name, description, longDescription);
     }
 
-    public Item(String name, String description, String detailedDescription, Actionable consumer) {
-        super(name, description, detailedDescription, consumer);
-    }
-
     public void take(ActionSet actionSet, State s) {
         s.player.addItem(this);
         s.currentRoom.removeFeature(this);
