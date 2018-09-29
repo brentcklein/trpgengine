@@ -1,4 +1,4 @@
-package rpg;
+package rpg.classes;
 
 import java.util.HashSet;
 import java.util.Optional;
