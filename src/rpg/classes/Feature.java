@@ -1,6 +1,6 @@
 package rpg.classes;
 
-public class Feature extends NamedObject{
+public class Feature extends UseableObject {
 
     public Feature(
             String name,

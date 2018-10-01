@@ -5,7 +5,6 @@ public abstract class NamedObject {
     protected String name;
     protected String description;
     protected String detailedDescription;
-    protected boolean activated = false;
 
     public void setName(String name) { this.name = name; }
 
@@ -27,21 +26,7 @@ public abstract class NamedObject {
         this.detailedDescription = detailedDescription;
     }
 
-    public boolean isActivated() {
-        return activated;
-    }
-
-    public void setActivated(boolean activated) { this.activated = activated; }
-
     public void look(ActionSet actionSet, State s) {
         System.out.println(getDetailedDescription());
-    }
-
-    public void use(ActionSet actionSet, State s) {
-        System.out.println("Nothing happens.");
-    }
-
-    public void useWith(Item item, ActionSet actionSet, State s) {
-        System.out.println("Nothing happens.");
     }
 }
