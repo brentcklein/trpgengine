@@ -32,4 +32,16 @@ public abstract class NamedObject {
     }
 
     public void setActivated(boolean activated) { this.activated = activated; }
+
+    public void look(ActionSet actionSet, State s) {
+        System.out.println(getDetailedDescription());
+    }
+
+    public void use(ActionSet actionSet, State s) {
+        System.out.println("Nothing happens.");
+    }
+
+    public void useWith(Item item, ActionSet actionSet, State s) {
+        System.out.println("Nothing happens.");
+    }
 }
