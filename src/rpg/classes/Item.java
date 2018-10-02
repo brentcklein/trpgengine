@@ -1,4 +1,4 @@
-package rpg;
+package rpg.classes;
 
 import java.util.Optional;
 
@@ -11,18 +11,6 @@ public class Item extends Feature {
         s.player.addItem(this);
         s.currentRoom.removeFeature(this);
         System.out.println("You took the " + getName() + ".");
-    }
-
-    public void use(ActionSet actionSet, State s) {
-        System.out.println("Nothing happens.");
-    }
-
-    public void _use(ActionSet actionSet, State s) {
-        if (isPossessed(s)) {
-            use(actionSet, s);
-        } else {
-            System.out.println("You don't have that.");
-        }
     }
 
     public void useOn(ActionSet actionSet, State s) {

@@ -1,4 +1,4 @@
-package rpg;
+package rpg.classes;
 
 import java.util.Map;
 import java.util.Optional;
@@ -415,7 +415,7 @@ public class Main {
                             if (destination.isPresent()) {
                                 destination.get().goTo(actionSet, s);
                             } else {
-                                System.out.println("There is not an exit in that direction");
+                                System.out.println("There is not an exit in that direction.");
                             }
                             break;
                         case "look":
@@ -462,7 +462,7 @@ public class Main {
                             } else if (optionalInventoryItem.isPresent()) {
                                 optionalInventoryItem.get().use(actionSet, s);
                             } else {
-                                System.out.println("You can't do that."); // redundant with line 254. how to combine?
+                                System.out.println("You can't do that.");
                             }
                             break;
                     }

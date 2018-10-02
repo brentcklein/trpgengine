@@ -1,4 +1,4 @@
-package rpg;
+package rpg.classes;
 
 public class State {
     public Room currentRoom;
