@@ -11,6 +11,110 @@ public class Main {
 
         Scanner sc = new Scanner(System.in);
 
+        State s;
+
+        if (args.length > 0 && args[0].equalsIgnoreCase("example")) {
+            s = getExampleState();
+        } else {
+            // parse json config here
+            Room test = new Room("test", "test");
+            test.setEnd(true);
+            s = new State(test);
+        }
+
+        while (!s.gameOver) {
+            System.out.println(s.currentRoom.getDescription());
+            Map<String,Room> exits = s.currentRoom.getExits();
+
+            for (String direction :
+                    exits.keySet()) {
+                System.out.println("There is an exit to the " + direction.toUpperCase());
+            }
+
+            s.gameOver = s.currentRoom.isEnd();
+
+            if (!s.gameOver) {
+                String input = sc.nextLine();
+
+                Optional<ActionSet> actionSetOptional = InputParser.parseInput(input);
+
+                if (actionSetOptional.isPresent()) {
+                    ActionSet actionSet = actionSetOptional.get();
+                    Optional<Feature> optionalFeature =
+                            s.currentRoom.getFeatures().stream().filter(
+                                    (f) -> f.getName().equals(actionSet.getSubjectOptional().get())).findAny();
+                    Optional<Item> optionalItem = optionalFeature.filter((f) -> f instanceof Item).map((f) -> (Item)f);
+                    Optional<Item> optionalInventoryItem = s.player.getItem(actionSet.getSubjectOptional().get());
+                    switch (actionSet.getVerbOptional().get()) {
+                        case "go":
+                        case "head":
+                        case "travel":
+                            Optional<Room> destination = s.currentRoom.getAdjacentRoom(actionSet.getSubjectOptional().get());
+
+                            if (destination.isPresent()) {
+                                destination.get().goTo(actionSet, s);
+                            } else {
+                                System.out.println("There is not an exit in that direction.");
+                            }
+                            break;
+                        case "look":
+                        case "examine":
+                            if (
+                                    actionSet.getSubjectOptional().get().equalsIgnoreCase("room") ||
+                                            actionSet.getSubjectOptional().get().equalsIgnoreCase("around")) {
+                                s.currentRoom.look(actionSet, s);
+                            } else {
+                                if (optionalFeature.isPresent()) {
+                                    optionalFeature.get().look(actionSet, s);
+                                } else if (optionalInventoryItem.isPresent()) {
+                                    optionalInventoryItem.get().look(actionSet, s);
+                                } else {
+                                    System.out.println("You don't see anything interesting.");
+                                }
+                            }
+                            break;
+                        case "take":
+                            if (optionalItem.isPresent()) {
+                                optionalItem.get().take(actionSet, s);
+                            } else {
+                                System.out.println("You can't take that.");
+                            }
+                            break;
+                        case "use":
+                            if (optionalInventoryItem.isPresent()) {
+                                optionalInventoryItem.get().use(actionSet, s);
+                            } else {
+                                System.out.println("You don't have a " + actionSet.getSubjectOptional().get());
+                            }
+                            break;
+                        case "drop":
+                            if (optionalInventoryItem.isPresent()) {
+                                optionalInventoryItem.get().drop(actionSet, s);
+                            } else {
+                                System.out.println("You don't have a " + actionSet.getSubjectOptional().get() + ".");
+                            }
+                            break;
+                        default:
+                            // How do we make sure we don't run into collisions between the names of items and features?
+                            if (optionalFeature.isPresent()) {
+                                optionalFeature.get().use(actionSet, s);
+                            } else if (optionalInventoryItem.isPresent()) {
+                                optionalInventoryItem.get().use(actionSet, s);
+                            } else {
+                                System.out.println("You can't do that.");
+                            }
+                            break;
+                    }
+                } else {
+                    System.out.println("You can't do that.");
+                }
+            }
+        }
+
+        System.out.println("\n\n\nGame Over!");
+    }
+
+    private static State getExampleState() {
         Room start = new Room(
                 "You're in a room made of stone.",
                 "Light is coming through a hole in the ceiling. To the west a flight of stairs leads " +
@@ -19,7 +123,7 @@ public class Main {
         Room stairsDown = new Room(
                 "You are on the landing.",
                 "There is a landing after about fifty steps. To the north the stairs continue " +
-                    "down; to the east the stairs continue up."
+                        "down; to the east the stairs continue up."
         );
         Room closet = new Room(
                 "You are in a closet.",
@@ -309,8 +413,8 @@ public class Main {
             @Override
             public void use(ActionSet actionSet, State s) {
                 if (
-                    actionSet.getVerbOptional().get().equals("move") ||
-                    actionSet.getVerbOptional().get().equals("push")
+                        actionSet.getVerbOptional().get().equals("move") ||
+                                actionSet.getVerbOptional().get().equals("push")
                 ) {
                     s.currentRoom.addExits(Map.of("NORTH", cavern));
                     System.out.println("You move the obstacle to the side.");
@@ -337,11 +441,11 @@ public class Main {
             @Override
             public void use(ActionSet actionSet, State s) {
                 if (
-                    (actionSet.getVerbOptional().get().equals("use") ||
-                        actionSet.getVerbOptional().get().equals("put") ||
-                        actionSet.getVerbOptional().get().equals("place") ||
-                        actionSet.getVerbOptional().get().equals("set")) &&
-                    actionSet.getObjectOptional().isPresent())
+                        (actionSet.getVerbOptional().get().equals("use") ||
+                                actionSet.getVerbOptional().get().equals("put") ||
+                                actionSet.getVerbOptional().get().equals("place") ||
+                                actionSet.getVerbOptional().get().equals("set")) &&
+                                actionSet.getObjectOptional().isPresent())
                 {
                     this.useOn(actionSet, s);
                 } else {
@@ -381,97 +485,6 @@ public class Main {
             }
         });
 
-        State s = new State(start);
-
-        while (!s.gameOver) {
-            System.out.println(s.currentRoom.getDescription());
-            Map<String,Room> exits = s.currentRoom.getExits();
-
-            for (String direction :
-                    exits.keySet()) {
-                System.out.println("There is an exit to the " + direction);
-            }
-
-            s.gameOver = s.currentRoom.isEnd();
-
-            if (!s.gameOver) {
-                String input = sc.nextLine();
-
-                Optional<ActionSet> actionSetOptional = InputParser.parseInput(input);
-
-                if (actionSetOptional.isPresent()) {
-                    ActionSet actionSet = actionSetOptional.get();
-                    Optional<Feature> optionalFeature =
-                            s.currentRoom.getFeatures().stream().filter(
-                                    (f) -> f.getName().equals(actionSet.getSubjectOptional().get())).findAny();
-                    Optional<Item> optionalItem = optionalFeature.filter((f) -> f instanceof Item).map((f) -> (Item)f);
-                    Optional<Item> optionalInventoryItem = s.player.getItem(actionSet.getSubjectOptional().get());
-                    switch (actionSet.getVerbOptional().get()) {
-                        case "go":
-                        case "head":
-                        case "travel":
-                            Optional<Room> destination = s.currentRoom.getAdjacentRoom(actionSet.getSubjectOptional().get());
-
-                            if (destination.isPresent()) {
-                                destination.get().goTo(actionSet, s);
-                            } else {
-                                System.out.println("There is not an exit in that direction.");
-                            }
-                            break;
-                        case "look":
-                        case "examine":
-                            if (
-                                    actionSet.getSubjectOptional().get().equalsIgnoreCase("room") ||
-                                            actionSet.getSubjectOptional().get().equalsIgnoreCase("around")) {
-                                s.currentRoom.look(actionSet, s);
-                            } else {
-                                if (optionalFeature.isPresent()) {
-                                    optionalFeature.get().look(actionSet, s);
-                                } else if (optionalInventoryItem.isPresent()) {
-                                    optionalInventoryItem.get().look(actionSet, s);
-                                } else {
-                                    System.out.println("You don't see anything interesting.");
-                                }
-                            }
-                            break;
-                        case "take":
-                            if (optionalItem.isPresent()) {
-                                optionalItem.get().take(actionSet, s);
-                            } else {
-                                System.out.println("You can't take that.");
-                            }
-                            break;
-                        case "use":
-                            if (optionalInventoryItem.isPresent()) {
-                                optionalInventoryItem.get().use(actionSet, s);
-                            } else {
-                                System.out.println("You don't have a " + actionSet.getSubjectOptional().get());
-                            }
-                            break;
-                        case "drop":
-                            if (optionalInventoryItem.isPresent()) {
-                                optionalInventoryItem.get().drop(actionSet, s);
-                            } else {
-                                System.out.println("You don't have a " + actionSet.getSubjectOptional().get() + ".");
-                            }
-                            break;
-                        default:
-                            // How do we make sure we don't run into collisions between the names of items and features?
-                            if (optionalFeature.isPresent()) {
-                                optionalFeature.get().use(actionSet, s);
-                            } else if (optionalInventoryItem.isPresent()) {
-                                optionalInventoryItem.get().use(actionSet, s);
-                            } else {
-                                System.out.println("You can't do that.");
-                            }
-                            break;
-                    }
-                } else {
-                    System.out.println("You can't do that.");
-                }
-            }
-        }
-
-        System.out.println("\n\n\nGame Over!");
+        return new State(start);
     }
 }
