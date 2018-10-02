@@ -3,7 +3,7 @@ package rpg.classes;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
-
+import com.google.gson.*;
 public class Main {
 
 
@@ -17,6 +17,8 @@ public class Main {
             s = getExampleState();
         } else {
             // parse json config here
+            Gson g = new Gson();
+
             Room test = new Room("test", "test");
             test.setEnd(true);
             s = new State(test);
