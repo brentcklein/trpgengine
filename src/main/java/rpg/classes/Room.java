@@ -4,14 +4,16 @@ import java.util.*;
 
 public class Room {
 
+    private Integer id;
     private String description;
     private String detailedDescription;
     private Set<Feature> features;
-    private Map<String,Room> exits;
+    private Map<String,Integer> exits;
     private boolean visited;
     private boolean isEnd;
 
-    public Room(String description, String detailedDescription, boolean isEnd) {
+    public Room(Integer id, String description, String detailedDescription, boolean isEnd) {
+        this.id = id;
         this.description = description;
         this.detailedDescription = detailedDescription;
         this.features = new HashSet<>();
@@ -20,8 +22,12 @@ public class Room {
         this.isEnd = isEnd;
     }
 
-    public Room(String description, String detailedDescription) {
-        this(description, detailedDescription, false);
+    public Room(Integer id, String description, String detailedDescription) {
+        this(id, description, detailedDescription, false);
+    }
+
+    public Integer getId() {
+        return id;
     }
 
     public String getDescription() {
@@ -79,11 +85,11 @@ public class Room {
         return visited;
     }
 
-    public Map<String, Room> getExits() {
+    public Map<String, Integer> getExits() {
         return exits;
     }
 
-    public void addExits(Map<String, Room> rooms) {
+    public void addExits(Map<String, Integer> rooms) {
         exits.putAll(rooms);
     }
 
@@ -93,7 +99,7 @@ public class Room {
         System.out.println(getDetailedDescription());
     }
 
-    public Optional<Room> getAdjacentRoom(String direction) {
+    public Optional<Integer> getAdjacentRoom(String direction) {
         direction = direction.toUpperCase();
         if (exits.containsKey(direction)) {
             return Optional.of(exits.get(direction));

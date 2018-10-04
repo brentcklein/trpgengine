@@ -1,8 +1,12 @@
 package rpg.classes;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Stream;
+
 import com.google.gson.*;
 public class Main {
 
@@ -12,21 +16,33 @@ public class Main {
         Scanner sc = new Scanner(System.in);
 
         State s;
+        Room[] rooms;
 
         if (args.length > 0 && args[0].equalsIgnoreCase("example")) {
-            s = getExampleState();
+            rooms = getExampleRooms();
+            s = new State(1,rooms);
         } else {
             // parse json config here
             Gson g = new Gson();
+            File f = new File("config/config.json");
+            try (FileReader fr = new FileReader(f)) {
+                Config c = g.fromJson(fr,Config.class);
+                for (Room tc :
+                        c.getRooms()) {
+                    System.out.println("room description: " + tc.getDescription());
+                }
+            } catch (IOException ioee) {
+                System.exit(1);
+            }
 
-            Room test = new Room("test", "test");
+            Room test = new Room(1, "test", "test");
             test.setEnd(true);
-            s = new State(test);
+            s = new State(1, new Room[] {test});
         }
 
         while (!s.gameOver) {
             System.out.println(s.currentRoom.getDescription());
-            Map<String,Room> exits = s.currentRoom.getExits();
+            Map<String,Integer> exits = s.currentRoom.getExits();
 
             for (String direction :
                     exits.keySet()) {
@@ -51,13 +67,14 @@ public class Main {
                         case "go":
                         case "head":
                         case "travel":
-                            Optional<Room> destination = s.currentRoom.getAdjacentRoom(actionSet.getSubjectOptional().get());
 
-                            if (destination.isPresent()) {
-                                destination.get().goTo(actionSet, s);
-                            } else {
-                                System.out.println("There is not an exit in that direction.");
-                            }
+                            actionSet.getSubjectOptional()
+                                    .flatMap(s.currentRoom::getAdjacentRoom)
+                                    .flatMap(s::getRoomOptional)
+                                    .ifPresentOrElse(
+                                            (d) -> d.goTo(actionSet, s),
+                                            () -> System.out.println("There is not an exit in that direction.")
+                                            );
                             break;
                         case "look":
                         case "examine":
@@ -116,35 +133,42 @@ public class Main {
         System.out.println("\n\n\nGame Over!");
     }
 
-    private static State getExampleState() {
+    private static Room[] getExampleRooms() {
         Room start = new Room(
+                1,
                 "You're in a room made of stone.",
                 "Light is coming through a hole in the ceiling. To the west a flight of stairs leads " +
                         "downward."
         );
         Room stairsDown = new Room(
+                2,
                 "You are on the landing.",
                 "There is a landing after about fifty steps. To the north the stairs continue " +
                         "down; to the east the stairs continue up."
         );
         Room closet = new Room(
+                3,
                 "You are in a closet.",
                 "You're in a small closet. From the looks of things it was a storage room at one point " +
                         "but hasn't be used in some time."
         );
         Room dungeon = new Room(
+                4,
                 "You're in what appears to be a castle dungeon.",
                 "Chains hang from the walls, and there are several small cells with mostly rotten doors."
         );
         Room cell1 = new Room(
+                5,
                 "You are in one of the cells.",
                 "Manacles hang from a rusty peg in the wall."
         );
         Room cell2 = new Room(
+                6,
                 "You are in one of the cells.",
                 "The broken remains of a wooden cot stand against one wall."
         );
         Room oubliette = new Room(
+                7,
                 "You are in an oubliette.",
                 "Faint light is coming through a hole in the ceiling. You scream, but no one hears you..."
         ) {
@@ -161,6 +185,7 @@ public class Main {
             }
         };
         Room cell3 = new Room(
+                8,
                 "You step into one of the cells, but as you do you hear a distinct 'click.' The floor gives " +
                         "way underneath your feet, and you fall a dozen feet into a pit.\n",
                 ""
@@ -180,11 +205,13 @@ public class Main {
             }
         };
         Room cavern = new Room(
+                9,
                 "You are in a large cavern.",
                 "Crystals embedded in the rock around you glow a soft purple, illuminating the area. " +
                         "Several tunnels branch off from the main cavern."
         );
         Room cave1 = new Room(
+                10,
                 "You are in a cave.",
                 "A large stalagmite fills one corner of the room."
         ) {
@@ -198,6 +225,7 @@ public class Main {
             }
         };
         Room cave2 = new Room(
+                11,
                 "You are in a cave.",
                 "You hear water dripping from somewhere up above."
         ) {
@@ -211,6 +239,7 @@ public class Main {
             }
         };
         Room cave3 = new Room(
+                12,
                 "You are in a cave.",
                 "A small stream splashes out of a fissure in the cave wall, then disappears down a " +
                         "crack at the base of a stalagmite."
@@ -225,6 +254,7 @@ public class Main {
             }
         };
         Room cave4 = new Room(
+                13,
                 "You are in a cave.",
                 "Stalagmites and stalactites cover the floor and ceiling. The sound of dripping water " +
                         "is constant in this room."
@@ -239,6 +269,7 @@ public class Main {
             }
         };
         Room cave5 = new Room(
+                14,
                 "You are in a cave.",
                 "The floor is sandy here."
         ) {
@@ -252,6 +283,7 @@ public class Main {
             }
         };
         Room cave6 = new Room(
+                15,
                 "You are in a cave.",
                 "To the south you see worked stone peeking through the living rock in places."
         ) {
@@ -265,11 +297,12 @@ public class Main {
             }
         };
         Room shrine = new Room(
+                16,
                 "You are in some kind of shrine.",
                 "The room is brightly lit with glowing purple crystals."
         );
 
-        start.addExits(Map.of("WEST", stairsDown));
+        start.addExits(Map.of("WEST", 2));
         start.addFeature(new Item(
                 "kazoo",
                 "There is a kazoo on the floor.",
@@ -311,7 +344,7 @@ public class Main {
                 if (item.getName().equals("key")) {
                     System.out.println("You slide the key into the lock and turn it. There's an audible click, and the " +
                             "door swings open.");
-                    start.addExits(Map.of("EAST", closet));
+                    start.addExits(Map.of("EAST", 3));
                     start.removeFeature(this);
                     s.currentRoom.setDetailedDescription("Light is coming through a hole in the ceiling. To the west a " +
                             "flight of stairs leads downward. To the east there's an open door.");
@@ -320,7 +353,7 @@ public class Main {
                 }
             }
         });
-        stairsDown.addExits(Map.of("NORTH", dungeon, "EAST", start));
+        stairsDown.addExits(Map.of("NORTH", 4, "EAST", 1));
         stairsDown.addFeature(new Feature(
                 "brazier",
                 "The landing is lit by a brazier on the wall.",
@@ -336,7 +369,7 @@ public class Main {
                 }
             }
         });
-        closet.addExits(Map.of("WEST", start));
+        closet.addExits(Map.of("WEST", 1));
         closet.addFeature(new Item(
                 "torch",
                 "There's a torch on a shelf.",
@@ -375,9 +408,9 @@ public class Main {
             }
         });
 
-        dungeon.addExits(Map.of("WEST", cell1, "NORTH", cell2, "EAST", cell3, "SOUTH", stairsDown));
+        dungeon.addExits(Map.of("WEST", 5, "NORTH", 6, "EAST", 8, "SOUTH", 2));
 
-        cell1.addExits(Map.of("EAST", dungeon));
+        cell1.addExits(Map.of("EAST", 4));
         cell1.addFeature(new Feature(
                 "rags",
                 "There's a pile of rags in the corner.",
@@ -406,7 +439,7 @@ public class Main {
                 }
             }
         });
-        cell2.addExits(Map.of("SOUTH", dungeon));
+        cell2.addExits(Map.of("SOUTH", 4));
         cell2.addFeature(new Feature(
                 "obstacle",
                 "An obstacle sits against the far wall.",
@@ -418,7 +451,7 @@ public class Main {
                         actionSet.getVerbOptional().get().equals("move") ||
                                 actionSet.getVerbOptional().get().equals("push")
                 ) {
-                    s.currentRoom.addExits(Map.of("NORTH", cavern));
+                    s.currentRoom.addExits(Map.of("NORTH", 9));
                     System.out.println("You move the obstacle to the side.");
                     setDetailedDescription("It's not really much of an obstacle anymore.");
                     s.currentRoom.setDetailedDescription("The broken remains of a wooden cot stand against one wall. " +
@@ -428,7 +461,7 @@ public class Main {
                 }
             }
         });
-        cell3.addExits(Map.of("WEST", dungeon));
+        cell3.addExits(Map.of("WEST", 4));
         cell3.addFeature(new Item(
                 "crystal",
                 "There's a crystal on the table.",
@@ -456,15 +489,15 @@ public class Main {
             }
         });
 
-        cavern.addExits(Map.of("EAST", cave6, "SOUTH", cell2, "WEST", cave1));
-        cave1.addExits(Map.of("NORTH", cave2, "EAST", cavern,"WEST", cavern));
-        cave2.addExits(Map.of("NORTH", cave6, "EAST", cave3, "SOUTH", cave2, "WEST", cavern));
-        cave3.addExits(Map.of("NORTH", cave4, "EAST", cavern, "WEST", cave2));
-        cave4.addExits(Map.of("NORTH", shrine, "EAST", cavern, "SOUTH", cave3, "WEST", cave5));
-        cave5.addExits(Map.of("EAST", cave6, "SOUTH", cavern));
-        cave6.addExits(Map.of("NORTH", cave5, "EAST", cave2));
+        cavern.addExits(Map.of("EAST", 14, "SOUTH", 6, "WEST", 10));
+        cave1.addExits(Map.of("NORTH", 11, "EAST", 9,"WEST", 9));
+        cave2.addExits(Map.of("NORTH", 15, "EAST", 12, "SOUTH", 10, "WEST", 8));
+        cave3.addExits(Map.of("NORTH", 13, "EAST", 9, "WEST", 10));
+        cave4.addExits(Map.of("NORTH", 16, "EAST", 9, "SOUTH", 11, "WEST", 13));
+        cave5.addExits(Map.of("EAST", 12, "SOUTH", 9));
+        cave6.addExits(Map.of("NORTH", 13, "EAST", 10));
 
-        shrine.addExits(Map.of("SOUTH", cave4));
+        shrine.addExits(Map.of("SOUTH", 12));
         shrine.addFeature(new Feature(
                 "pedestal",
                 "There is a pedestal in the middle of the room.",
@@ -487,6 +520,25 @@ public class Main {
             }
         });
 
-        return new State(start);
+        Room[] rooms = new Room[] {
+                start,
+                stairsDown,
+                closet,
+                dungeon,
+                cell1,
+                cell2,
+                cell3,
+                oubliette,
+                cavern,
+                cave1,
+                cave2,
+                cave3,
+                cave4,
+                cave5,
+                cave6,
+                shrine
+        };
+
+        return rooms;
     }
 }
