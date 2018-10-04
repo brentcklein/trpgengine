@@ -1,6 +1,7 @@
 package rpg.classes;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Room {
 
@@ -12,18 +13,30 @@ public class Room {
     private boolean visited;
     private boolean isEnd;
 
-    public Room(Integer id, String description, String detailedDescription, boolean isEnd) {
+    public Room(Integer id, String description, String detailedDescription, Set<Feature> features, Map<String, Integer> exits, boolean visited, boolean isEnd) {
         this.id = id;
         this.description = description;
         this.detailedDescription = detailedDescription;
-        this.features = new HashSet<>();
-        exits = new HashMap<>();
-        this.visited = false;
+        this.features = features;
+        this.exits = exits;
+        this.visited = visited;
         this.isEnd = isEnd;
+    }
+
+    public Room(Integer id, String description, String detailedDescription, Map<String, Integer> exits) {
+        this(id, description, detailedDescription, new HashSet<>(), exits, false, false);
+    }
+
+    public Room(Integer id, String description, String detailedDescription, boolean isEnd) {
+        this(id, description, detailedDescription, new HashSet<>(), new HashMap<>(), false, isEnd);
     }
 
     public Room(Integer id, String description, String detailedDescription) {
         this(id, description, detailedDescription, false);
+    }
+
+    public Room() {
+        this(0, "", "", new HashSet<>(), new HashMap<>(), false, false);
     }
 
     public Integer getId() {
@@ -100,7 +113,7 @@ public class Room {
     }
 
     public Optional<Integer> getAdjacentRoom(String direction) {
-        direction = direction.toUpperCase();
+        direction = direction.toLowerCase();
         if (exits.containsKey(direction)) {
             return Optional.of(exits.get(direction));
         } else {

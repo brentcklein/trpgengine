@@ -1,15 +1,18 @@
 {
+  "start": 1,
   "rooms": [{
     "id": 1,
-    "exits": [{
-      "direction": "west",
-      "destination": 2
-    }]
+    "description": "You are in the east room",
+    "detailedDescription": "",
+    "exits": {
+      "west": 2
+    }
   },{
     "id": 2,
-    "exits": [{
-      "direction": "east",
-      "destination": 1
-    }]
+    "description": "You are in the west room",
+    "detailedDescription": "",
+    "exits": {
+      "east": 1
+    }
   }]
 }

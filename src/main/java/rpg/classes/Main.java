@@ -15,30 +15,28 @@ public class Main {
 
         Scanner sc = new Scanner(System.in);
 
-        State s;
+        Optional<State> stateOptional = Optional.empty();
         Room[] rooms;
 
         if (args.length > 0 && args[0].equalsIgnoreCase("example")) {
             rooms = getExampleRooms();
-            s = new State(1,rooms);
+            stateOptional = Optional.of(new State(1,rooms));
         } else {
             // parse json config here
             Gson g = new Gson();
             File f = new File("config/config.json");
             try (FileReader fr = new FileReader(f)) {
                 Config c = g.fromJson(fr,Config.class);
-                for (Room tc :
-                        c.getRooms()) {
-                    System.out.println("room description: " + tc.getDescription());
-                }
+                stateOptional = Optional.of(new State(c.start, c.getRooms()));
             } catch (IOException ioee) {
                 System.exit(1);
             }
-
-            Room test = new Room(1, "test", "test");
-            test.setEnd(true);
-            s = new State(1, new Room[] {test});
         }
+
+        if (!stateOptional.isPresent()) {
+            System.exit(1);
+        }
+        State s = stateOptional.get();
 
         while (!s.gameOver) {
             System.out.println(s.currentRoom.getDescription());
