@@ -4,10 +4,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Stream;
 
 import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+
 public class Main {
 
 
@@ -17,6 +21,7 @@ public class Main {
 
         Optional<State> stateOptional = Optional.empty();
         Room[] rooms;
+        ArrayList<Room> roomArrayList = new ArrayList<>();
 
         if (args.length > 0 && args[0].equalsIgnoreCase("example")) {
             rooms = getExampleRooms();
@@ -24,10 +29,56 @@ public class Main {
         } else {
             // parse json config here
             Gson g = new Gson();
+            JsonParser j = new JsonParser();
+
             File f = new File("config/config.json");
             try (FileReader fr = new FileReader(f)) {
-                Config c = g.fromJson(fr,Config.class);
-                stateOptional = Optional.of(new State(c.start, c.getRooms()));
+                JsonObject object = j.parse(fr).getAsJsonObject();
+
+                for (JsonElement room :
+                        object.getAsJsonArray("rooms")) {
+
+                    JsonObject roomAsJsonObject = room.getAsJsonObject();
+
+                    Set<Feature> features = new HashSet<>();
+
+                    if (roomAsJsonObject.getAsJsonArray("features") != null) {
+                        for (JsonElement jsonFeature:
+                                roomAsJsonObject.getAsJsonArray("features")) {
+                            JsonObject featureAsJsonObject = jsonFeature.getAsJsonObject();
+                            // TODO: wrap gson library to always return Optionals
+                            if (Optional.ofNullable(featureAsJsonObject.get("isItem"))
+                                    .map(JsonElement::getAsBoolean).orElse(false)) {
+                                features.add(g.fromJson(jsonFeature, Item.class));
+                            } else {
+                                features.add(g.fromJson(jsonFeature, Feature.class));
+                            }
+                        }
+                    }
+
+                    Boolean isEnd = Optional.ofNullable(roomAsJsonObject.get("isEnd"))
+                            .map(JsonElement::getAsBoolean).orElse(false);
+
+                    HashMap<String,Integer> exits;
+                    Type type = new TypeToken<HashMap<String,Integer>>(){}.getType();
+
+                    Optional<HashMap<String,Integer>> exitsOptional = Optional.ofNullable(roomAsJsonObject.get("exits"))
+                            .map(rjo -> g.fromJson(rjo, type));
+                    exits = exitsOptional.orElse(new HashMap<>());
+
+                    roomArrayList.add(new Room(
+                            roomAsJsonObject.get("id").getAsInt(),
+                            roomAsJsonObject.get("description").getAsString(),
+                            roomAsJsonObject.get("detailedDescription").getAsString(),
+                            features,
+                            exits,
+                            false,
+                            isEnd
+                    ));
+                }
+
+//                Config c = g.fromJson(fr,Config.class);
+                stateOptional = Optional.of(new State(object.get("start").getAsInt(), roomArrayList.toArray(new Room[0])));
             } catch (IOException ioee) {
                 System.exit(1);
             }

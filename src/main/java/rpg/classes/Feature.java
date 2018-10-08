@@ -11,4 +11,8 @@ public class Feature extends UseableObject {
         this.description = description;
         this.detailedDescription = detailedDescription;
     }
+
+    public Feature() {
+        this("","","");
+    }
 }

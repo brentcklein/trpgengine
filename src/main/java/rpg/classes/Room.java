@@ -114,11 +114,7 @@ public class Room {
 
     public Optional<Integer> getAdjacentRoom(String direction) {
         direction = direction.toLowerCase();
-        if (exits.containsKey(direction)) {
-            return Optional.of(exits.get(direction));
-        } else {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(exits.get(direction));
     }
 
     public void goTo(ActionSet actionSet, State s) {
