@@ -1,16 +1,15 @@
 package rpg.classes;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.stream.Stream;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+
+import static java.util.Optional.ofNullable;
 
 public class Main {
 
@@ -47,7 +46,7 @@ public class Main {
                                 roomAsJsonObject.getAsJsonArray("features")) {
                             JsonObject featureAsJsonObject = jsonFeature.getAsJsonObject();
                             // TODO: wrap gson library to always return Optionals
-                            if (Optional.ofNullable(featureAsJsonObject.get("isItem"))
+                            if (ofNullable(featureAsJsonObject.get("isItem"))
                                     .map(JsonElement::getAsBoolean).orElse(false)) {
                                 features.add(g.fromJson(jsonFeature, Item.class));
                             } else {
@@ -56,15 +55,16 @@ public class Main {
                         }
                     }
 
-                    Boolean isEnd = Optional.ofNullable(roomAsJsonObject.get("isEnd"))
+                    Boolean isEnd = ofNullable(roomAsJsonObject.get("isEnd"))
                             .map(JsonElement::getAsBoolean).orElse(false);
 
                     HashMap<String,Integer> exits;
                     Type type = new TypeToken<HashMap<String,Integer>>(){}.getType();
 
-                    Optional<HashMap<String,Integer>> exitsOptional = Optional.ofNullable(roomAsJsonObject.get("exits"))
-                            .map(rjo -> g.fromJson(rjo, type));
-                    exits = exitsOptional.orElse(new HashMap<>());
+                    // TODO: Error checking
+                    exits = Optional.ofNullable(roomAsJsonObject.get("exits"))
+                            .map(rjo -> g.<HashMap<String,Integer>>fromJson(rjo,type))
+                            .orElse(new HashMap<>());
 
                     roomArrayList.add(new Room(
                             roomAsJsonObject.get("id").getAsInt(),
@@ -105,77 +105,64 @@ public class Main {
 
                 Optional<ActionSet> actionSetOptional = InputParser.parseInput(input);
 
-                if (actionSetOptional.isPresent()) {
-                    ActionSet actionSet = actionSetOptional.get();
-                    Optional<Feature> optionalFeature =
-                            s.currentRoom.getFeatures().stream().filter(
-                                    (f) -> f.getName().equals(actionSet.getSubjectOptional().get())).findAny();
-                    Optional<Item> optionalItem = optionalFeature.filter((f) -> f instanceof Item).map((f) -> (Item)f);
-                    Optional<Item> optionalInventoryItem = s.player.getItem(actionSet.getSubjectOptional().get());
-                    switch (actionSet.getVerbOptional().get()) {
-                        case "go":
-                        case "head":
-                        case "travel":
+                actionSetOptional.ifPresentOrElse(
+                        (actionSet -> {
+                            Optional<Feature> optionalFeature =
+                                    s.currentRoom.getFeatures().stream().filter(
+                                            (f) -> f.getName().equals(actionSet.getSubjectOptional().get())).findAny();
+                            Optional<Item> optionalItem = optionalFeature.filter((f) -> f instanceof Item).map((f) -> (Item)f);
+                            Optional<Item> optionalInventoryItem = s.player.getItem(actionSet.getSubjectOptional().get());
+                            switch (actionSet.getVerbOptional().get()) {
+                                case "go":
+                                case "head":
+                                case "travel":
 
-                            actionSet.getSubjectOptional()
-                                    .flatMap(s.currentRoom::getAdjacentRoom)
-                                    .flatMap(s::getRoomOptional)
-                                    .ifPresentOrElse(
-                                            (d) -> d.goTo(actionSet, s),
-                                            () -> System.out.println("There is not an exit in that direction.")
-                                            );
-                            break;
-                        case "look":
-                        case "examine":
-                            if (
-                                    actionSet.getSubjectOptional().get().equalsIgnoreCase("room") ||
-                                            actionSet.getSubjectOptional().get().equalsIgnoreCase("around")) {
-                                s.currentRoom.look(actionSet, s);
-                            } else {
-                                if (optionalFeature.isPresent()) {
-                                    optionalFeature.get().look(actionSet, s);
-                                } else if (optionalInventoryItem.isPresent()) {
-                                    optionalInventoryItem.get().look(actionSet, s);
-                                } else {
-                                    System.out.println("You don't see anything interesting.");
-                                }
+                                    actionSet.getSubjectOptional()
+                                            .flatMap(s.currentRoom::getAdjacentRoom)
+                                            .flatMap(s::getRoomOptional)
+                                            .ifPresentOrElse(
+                                                    (d) -> d.goTo(actionSet, s),
+                                                    () -> System.out.println("There is not an exit in that direction."));
+                                    break;
+                                case "look":
+                                case "examine":
+                                    if (
+                                            actionSet.getSubjectOptional().get().equalsIgnoreCase("room") ||
+                                                    actionSet.getSubjectOptional().get().equalsIgnoreCase("around")) {
+                                        s.currentRoom.look(actionSet, s);
+                                    } else {
+                                        optionalFeature
+                                                .or(() -> optionalInventoryItem)
+                                                .ifPresentOrElse(
+                                                        o -> o.look(actionSet,s),
+                                                        () -> System.out.println("You don't see anything interesting."));
+                                    }
+                                    break;
+                                case "take":
+                                    optionalItem.ifPresentOrElse(
+                                            (item -> item.take(actionSet,s)),
+                                            () -> System.out.println("You can't take that."));
+                                    break;
+                                case "use":
+                                    optionalInventoryItem.ifPresentOrElse(
+                                            (item -> item.use(actionSet,s)),
+                                            () -> System.out.println("You don't have a " + actionSet.getSubjectOptional().get() + "."));
+                                    break;
+                                case "drop":
+                                    optionalInventoryItem.ifPresentOrElse(
+                                            (item -> item.drop(actionSet,s)),
+                                            () -> System.out.println("You don't have a " + actionSet.getSubjectOptional().get() + "."));
+                                    break;
+                                default:
+                                    // How do we make sure we don't run into collisions between the names of items and features?
+                                    optionalFeature.or(() -> optionalInventoryItem)
+                                            .ifPresentOrElse(
+                                                    (feature -> feature.use(actionSet,s)),
+                                                    () -> System.out.println("You can't do that."));
+                                    break;
                             }
-                            break;
-                        case "take":
-                            if (optionalItem.isPresent()) {
-                                optionalItem.get().take(actionSet, s);
-                            } else {
-                                System.out.println("You can't take that.");
-                            }
-                            break;
-                        case "use":
-                            if (optionalInventoryItem.isPresent()) {
-                                optionalInventoryItem.get().use(actionSet, s);
-                            } else {
-                                System.out.println("You don't have a " + actionSet.getSubjectOptional().get());
-                            }
-                            break;
-                        case "drop":
-                            if (optionalInventoryItem.isPresent()) {
-                                optionalInventoryItem.get().drop(actionSet, s);
-                            } else {
-                                System.out.println("You don't have a " + actionSet.getSubjectOptional().get() + ".");
-                            }
-                            break;
-                        default:
-                            // How do we make sure we don't run into collisions between the names of items and features?
-                            if (optionalFeature.isPresent()) {
-                                optionalFeature.get().use(actionSet, s);
-                            } else if (optionalInventoryItem.isPresent()) {
-                                optionalInventoryItem.get().use(actionSet, s);
-                            } else {
-                                System.out.println("You can't do that.");
-                            }
-                            break;
-                    }
-                } else {
-                    System.out.println("You can't do that.");
-                }
+                        }),
+                        () -> System.out.println("You can't do that."));
             }
         }
 
