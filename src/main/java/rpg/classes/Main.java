@@ -5,11 +5,22 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 
+import org.reflections.scanners.ResourcesScanner;
+import org.reflections.util.*;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+
 import static java.util.Optional.ofNullable;
+
+import rpg.custom.*;
+import rpg.interfaces.ICustomObject;
+
+import javax.naming.Name;
 
 public class Main {
 
@@ -30,6 +41,11 @@ public class Main {
             Gson g = new Gson();
             JsonParser j = new JsonParser();
 
+            Reflections reflections = new Reflections("rpg.custom");
+
+            Set<Class<? extends CustomFeature>> featureClasses = reflections.getSubTypesOf(CustomFeature.class);
+            Set<Class<? extends CustomItem>> itemClasses = reflections.getSubTypesOf(CustomItem.class);
+
             File f = new File("config/config.json");
             try (FileReader fr = new FileReader(f)) {
                 JsonObject object = j.parse(fr).getAsJsonObject();
@@ -48,9 +64,24 @@ public class Main {
                             // TODO: wrap gson library to always return Optionals
                             if (ofNullable(featureAsJsonObject.get("isItem"))
                                     .map(JsonElement::getAsBoolean).orElse(false)) {
-                                features.add(g.fromJson(jsonFeature, Item.class));
+
+                                // TODO: Refactor class handling into separate class
+                                Class<? extends Item> itemClass = ofNullable(featureAsJsonObject.get("customClass"))
+                                        .map(m -> g.fromJson(m,String.class))
+                                        .<Class<? extends Item>>flatMap(s -> itemClasses.stream()
+                                                .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
+                                                .findFirst())
+                                        .orElse(Item.class);
+                                features.add(g.fromJson(jsonFeature, itemClass));
                             } else {
-                                features.add(g.fromJson(jsonFeature, Feature.class));
+                                // TODO: Refactor class handling into separate class
+                                Class<? extends Feature> featureClass = ofNullable(featureAsJsonObject.get("customClass"))
+                                        .map(m -> g.fromJson(m,String.class))
+                                        .<Class<? extends Feature>>flatMap(s -> featureClasses.stream()
+                                                .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
+                                                .findFirst())
+                                        .orElse(Feature.class);
+                                features.add(g.fromJson(jsonFeature, featureClass));
                             }
                         }
                     }

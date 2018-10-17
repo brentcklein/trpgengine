@@ -33,7 +33,8 @@
       "name": "compass",
       "description": "There's a compass on the map stand.",
       "detailedDescription": "An old compass.",
-      "isItem": true
+      "isItem": true,
+      "customClass": "Compass"
     }]
   },{
     "id": 4,
