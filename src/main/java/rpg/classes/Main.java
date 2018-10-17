@@ -3,28 +3,24 @@ package rpg.classes;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.util.*;
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
 
 import static java.util.Optional.ofNullable;
 
 import rpg.custom.*;
-import rpg.interfaces.ICustomObject;
 
-import javax.naming.Name;
 
 public class Main {
 
-
+    // TODO: clean up this rat's nest
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
@@ -43,10 +39,12 @@ public class Main {
 
             Reflections reflections = new Reflections("rpg.custom");
 
+            // TODO: figure out how to treat all custom classes the same. Implement a common interface?
+            Set<Class<? extends CustomRoom>> roomClasses = reflections.getSubTypesOf(CustomRoom.class);
             Set<Class<? extends CustomFeature>> featureClasses = reflections.getSubTypesOf(CustomFeature.class);
             Set<Class<? extends CustomItem>> itemClasses = reflections.getSubTypesOf(CustomItem.class);
 
-            File f = new File("config/config.json");
+            File f = new File("config/example.config.json");
             try (FileReader fr = new FileReader(f)) {
                 JsonObject object = j.parse(fr).getAsJsonObject();
 
@@ -97,18 +95,46 @@ public class Main {
                             .map(rjo -> g.<HashMap<String,Integer>>fromJson(rjo,type))
                             .orElse(new HashMap<>());
 
-                    roomArrayList.add(new Room(
-                            roomAsJsonObject.get("id").getAsInt(),
-                            roomAsJsonObject.get("description").getAsString(),
-                            roomAsJsonObject.get("detailedDescription").getAsString(),
-                            features,
-                            exits,
-                            false,
-                            isEnd
-                    ));
+                    Class<? extends Room> roomClass = ofNullable(roomAsJsonObject.get("customClass"))
+                            .map(m -> g.fromJson(m,String.class))
+                            .<Class<? extends Room>>flatMap(s -> roomClasses.stream()
+                                    .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
+                                    .findFirst())
+                            .orElse(Room.class);
+
+                    // TODO: this....better
+                    try {
+                        Constructor constructor = roomClass.getConstructor(
+                                Integer.class,
+                                String.class,
+                                String.class,
+                                Set.class,
+                                Map.class,
+                                boolean.class,
+                                boolean.class);
+
+                        // TODO: don't cast
+                        roomArrayList.add((Room)constructor.newInstance(
+                                roomAsJsonObject.get("id").getAsInt(),
+                                roomAsJsonObject.get("description").getAsString(),
+                                roomAsJsonObject.get("detailedDescription").getAsString(),
+                                features,
+                                exits,
+                                false,
+                                isEnd
+                        ));
+                    } catch (NoSuchMethodException nsm) {
+                        System.out.println(nsm.getMessage());
+                        System.exit(6);
+                    } catch (InstantiationException ie) {
+                        System.exit(7);
+                    } catch (IllegalAccessException iae) {
+                        System.exit(8);
+                    } catch (InvocationTargetException ite) {
+                        System.exit(9);
+                    }
                 }
 
-//                Config c = g.fromJson(fr,Config.class);
                 stateOptional = Optional.of(new State(object.get("start").getAsInt(), roomArrayList.toArray(new Room[0])));
             } catch (IOException ioee) {
                 System.exit(1);
