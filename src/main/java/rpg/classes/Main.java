@@ -15,8 +15,6 @@ import org.reflections.Reflections;
 
 import static java.util.Optional.ofNullable;
 
-import rpg.custom.*;
-
 
 public class Main {
 
@@ -26,119 +24,121 @@ public class Main {
         Scanner sc = new Scanner(System.in);
 
         Optional<State> stateOptional = Optional.empty();
-        Room[] rooms;
         ArrayList<Room> roomArrayList = new ArrayList<>();
 
+        String filename = "config.json";
+
         if (args.length > 0 && args[0].equalsIgnoreCase("example")) {
-            rooms = getExampleRooms();
-            stateOptional = Optional.of(new State(1,rooms));
-        } else {
-            // parse json config here
-            Gson g = new Gson();
-            JsonParser j = new JsonParser();
+            filename = "example.config.json";
+        } else if (args.length > 0 && args[0].equalsIgnoreCase("simple")) {
+            filename = "simple.example.config.json";
+        }
 
-            Reflections reflections = new Reflections("rpg.custom");
+        // parse json config here
+        Gson g = new Gson();
+        JsonParser j = new JsonParser();
 
-            // TODO: figure out how to treat all custom classes the same. Implement a common interface?
-            Set<Class<? extends CustomRoom>> roomClasses = reflections.getSubTypesOf(CustomRoom.class);
-            Set<Class<? extends CustomFeature>> featureClasses = reflections.getSubTypesOf(CustomFeature.class);
-            Set<Class<? extends CustomItem>> itemClasses = reflections.getSubTypesOf(CustomItem.class);
+        Reflections reflections = new Reflections("rpg.custom");
 
-            File f = new File("config/example.config.json");
-            try (FileReader fr = new FileReader(f)) {
-                JsonObject object = j.parse(fr).getAsJsonObject();
+        // TODO: figure out how to treat all custom classes the same. Implement a common interface?
+        Set<Class<? extends CustomRoom>> roomClasses = reflections.getSubTypesOf(CustomRoom.class);
+        Set<Class<? extends CustomFeature>> featureClasses = reflections.getSubTypesOf(CustomFeature.class);
+        Set<Class<? extends CustomItem>> itemClasses = reflections.getSubTypesOf(CustomItem.class);
 
-                for (JsonElement room :
-                        object.getAsJsonArray("rooms")) {
+        File file = new File("config/"+filename);
+        try (FileReader fr = new FileReader(file)) {
+            JsonObject object = j.parse(fr).getAsJsonObject();
 
-                    JsonObject roomAsJsonObject = room.getAsJsonObject();
+            for (JsonElement room :
+                    object.getAsJsonArray("rooms")) {
 
-                    Set<Feature> features = new HashSet<>();
+                JsonObject roomAsJsonObject = room.getAsJsonObject();
 
-                    if (roomAsJsonObject.getAsJsonArray("features") != null) {
-                        for (JsonElement jsonFeature:
-                                roomAsJsonObject.getAsJsonArray("features")) {
-                            JsonObject featureAsJsonObject = jsonFeature.getAsJsonObject();
-                            // TODO: wrap gson library to always return Optionals
-                            if (ofNullable(featureAsJsonObject.get("isItem"))
-                                    .map(JsonElement::getAsBoolean).orElse(false)) {
+                Set<Feature> features = new HashSet<>();
 
-                                // TODO: Refactor class handling into separate class
-                                Class<? extends Item> itemClass = ofNullable(featureAsJsonObject.get("customClass"))
-                                        .map(m -> g.fromJson(m,String.class))
-                                        .<Class<? extends Item>>flatMap(s -> itemClasses.stream()
-                                                .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
-                                                .findFirst())
-                                        .orElse(Item.class);
-                                features.add(g.fromJson(jsonFeature, itemClass));
-                            } else {
-                                // TODO: Refactor class handling into separate class
-                                Class<? extends Feature> featureClass = ofNullable(featureAsJsonObject.get("customClass"))
-                                        .map(m -> g.fromJson(m,String.class))
-                                        .<Class<? extends Feature>>flatMap(s -> featureClasses.stream()
-                                                .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
-                                                .findFirst())
-                                        .orElse(Feature.class);
-                                features.add(g.fromJson(jsonFeature, featureClass));
-                            }
+                if (roomAsJsonObject.getAsJsonArray("features") != null) {
+                    for (JsonElement jsonFeature:
+                            roomAsJsonObject.getAsJsonArray("features")) {
+                        JsonObject featureAsJsonObject = jsonFeature.getAsJsonObject();
+                        // TODO: wrap gson library to always return Optionals
+                        if (ofNullable(featureAsJsonObject.get("isItem"))
+                                .map(JsonElement::getAsBoolean).orElse(false)) {
+
+                            // TODO: Refactor class handling into separate class
+                            Class<? extends Item> itemClass = ofNullable(featureAsJsonObject.get("customClass"))
+                                    .map(m -> g.fromJson(m,String.class))
+                                    .<Class<? extends Item>>flatMap(s -> itemClasses.stream()
+                                            .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
+                                            .findFirst())
+                                    .orElse(Item.class);
+                            features.add(g.fromJson(jsonFeature, itemClass));
+                        } else {
+                            // TODO: Refactor class handling into separate class
+                            Class<? extends Feature> featureClass = ofNullable(featureAsJsonObject.get("customClass"))
+                                    .map(m -> g.fromJson(m,String.class))
+                                    .<Class<? extends Feature>>flatMap(s -> featureClasses.stream()
+                                            .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
+                                            .findFirst())
+                                    .orElse(Feature.class);
+                            features.add(g.fromJson(jsonFeature, featureClass));
                         }
-                    }
-
-                    Boolean isEnd = ofNullable(roomAsJsonObject.get("isEnd"))
-                            .map(JsonElement::getAsBoolean).orElse(false);
-
-                    HashMap<String,Integer> exits;
-                    Type type = new TypeToken<HashMap<String,Integer>>(){}.getType();
-
-                    // TODO: Error checking
-                    exits = Optional.ofNullable(roomAsJsonObject.get("exits"))
-                            .map(rjo -> g.<HashMap<String,Integer>>fromJson(rjo,type))
-                            .orElse(new HashMap<>());
-
-                    Class<? extends Room> roomClass = ofNullable(roomAsJsonObject.get("customClass"))
-                            .map(m -> g.fromJson(m,String.class))
-                            .<Class<? extends Room>>flatMap(s -> roomClasses.stream()
-                                    .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
-                                    .findFirst())
-                            .orElse(Room.class);
-
-                    // TODO: this....better
-                    try {
-                        Constructor constructor = roomClass.getConstructor(
-                                Integer.class,
-                                String.class,
-                                String.class,
-                                Set.class,
-                                Map.class,
-                                boolean.class,
-                                boolean.class);
-
-                        // TODO: don't cast
-                        roomArrayList.add((Room)constructor.newInstance(
-                                roomAsJsonObject.get("id").getAsInt(),
-                                roomAsJsonObject.get("description").getAsString(),
-                                roomAsJsonObject.get("detailedDescription").getAsString(),
-                                features,
-                                exits,
-                                false,
-                                isEnd
-                        ));
-                    } catch (NoSuchMethodException nsm) {
-                        System.out.println(nsm.getMessage());
-                        System.exit(6);
-                    } catch (InstantiationException ie) {
-                        System.exit(7);
-                    } catch (IllegalAccessException iae) {
-                        System.exit(8);
-                    } catch (InvocationTargetException ite) {
-                        System.exit(9);
                     }
                 }
 
-                stateOptional = Optional.of(new State(object.get("start").getAsInt(), roomArrayList.toArray(new Room[0])));
-            } catch (IOException ioee) {
-                System.exit(1);
+                Boolean isEnd = ofNullable(roomAsJsonObject.get("isEnd"))
+                        .map(JsonElement::getAsBoolean).orElse(false);
+
+                HashMap<String,Integer> exits;
+                Type type = new TypeToken<HashMap<String,Integer>>(){}.getType();
+
+                // TODO: Error checking
+                exits = Optional.ofNullable(roomAsJsonObject.get("exits"))
+                        .map(rjo -> g.<HashMap<String,Integer>>fromJson(rjo,type))
+                        .orElse(new HashMap<>());
+
+                Class<? extends Room> roomClass = ofNullable(roomAsJsonObject.get("customClass"))
+                        .map(m -> g.fromJson(m,String.class))
+                        .<Class<? extends Room>>flatMap(s -> roomClasses.stream()
+                                .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
+                                .findFirst())
+                        .orElse(Room.class);
+
+                // TODO: this....better
+                try {
+                    Constructor constructor = roomClass.getConstructor(
+                            Integer.class,
+                            String.class,
+                            String.class,
+                            Set.class,
+                            Map.class,
+                            boolean.class,
+                            boolean.class);
+
+                    // TODO: don't cast
+                    roomArrayList.add((Room)constructor.newInstance(
+                            roomAsJsonObject.get("id").getAsInt(),
+                            roomAsJsonObject.get("description").getAsString(),
+                            roomAsJsonObject.get("detailedDescription").getAsString(),
+                            features,
+                            exits,
+                            false,
+                            isEnd
+                    ));
+                } catch (NoSuchMethodException nsm) {
+                    System.out.println(nsm.getMessage());
+                    System.exit(6);
+                } catch (InstantiationException ie) {
+                    System.exit(7);
+                } catch (IllegalAccessException iae) {
+                    System.exit(8);
+                } catch (InvocationTargetException ite) {
+                    System.exit(9);
+                }
             }
+
+            stateOptional = Optional.of(new State(object.get("start").getAsInt(), roomArrayList.toArray(new Room[0])));
+        } catch (IOException ioee) {
+            System.exit(1);
         }
 
         if (!stateOptional.isPresent()) {
@@ -175,8 +175,12 @@ public class Main {
                                 case "travel":
 
                                     actionSet.getSubjectOptional()
-                                            .flatMap(s.currentRoom::getAdjacentRoom)
-                                            .flatMap(s::getRoomOptional)
+                                            .flatMap((x) -> {
+                                                return s.currentRoom.getAdjacentRoom(x);
+                                            })
+                                            .flatMap((x) -> {
+                                                return s.getRoomOptional(x);
+                                            })
                                             .ifPresentOrElse(
                                                     (d) -> d.goTo(actionSet, s),
                                                     () -> System.out.println("There is not an exit in that direction."));

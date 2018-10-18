@@ -1,6 +1,7 @@
 package rpg.custom;
 
 import rpg.classes.ActionSet;
+import rpg.classes.CustomItem;
 import rpg.classes.State;
 
 public class Compass extends CustomItem {

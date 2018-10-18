@@ -1,0 +1,56 @@
+{
+  "start": 3,
+  "rooms": [{
+    "id": 1,
+    "description": "You are in the east room",
+    "detailedDescription": "",
+    "exits": {
+      "west": 3
+    },
+    "customClass": "NorthRoom"
+  },{
+    "id": 2,
+    "description": "You are in the west room",
+    "detailedDescription": "",
+    "exits": {
+      "east": 3
+    },
+    "isEnd": true
+  },{
+    "id": 3,
+    "description": "You are in the central room",
+    "detailedDescription": "A room with four doors.",
+    "exits": {
+      "west": 2,
+      "north": 5,
+      "east": 1,
+      "south": 4
+    },
+    "features": [{
+      "name": "map",
+      "description": "There's a map on a stand in the corner.",
+      "detailedDescription": "The map displays a country you don't recognize. The \"W\" in the compass rose is circled in pencil.",
+      "customClass": "MapStand"
+    },{
+      "name": "compass",
+      "description": "There's a compass on the map stand.",
+      "detailedDescription": "An old compass.",
+      "isItem": true,
+      "customClass": "Compass"
+    }]
+  },{
+    "id": 4,
+    "description": "You are in the south room",
+    "detailedDescription": "",
+    "exits": {
+      "north": 3
+    }
+  },{
+    "id": 5,
+    "description": "You are in the north room",
+    "detailedDescription": "",
+    "exits": {
+      "south": 3
+    }
+  }]
+}

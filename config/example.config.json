@@ -1,26 +1,189 @@
 {
-  "name": "startRoom",
-  "description": "this is the room you start in",
-  "exits": [{
-    "direction": "north",
-    "destination": "nextRoom"
-  }],
-  "features": [
-    {
-      "name": "chair",
-      "behavior": {
-        "verb": "sit",
-        "output": "You sat.",
-        "doOtherStuff": "set isActivated to true somehow"
-      }
-    }
-  ],
-  "items": [{
-      "name": "watch",
-      "behavior": {
-        "verb": "look",
-        "output": "watch.getTime()",
-        "doOtherStuff": "wind the watch?"
-      }
+  "start": 1,
+  "rooms": [{
+    "id": 1,
+    "description": "You're in a room made of stone.",
+    "detailedDescription": "Light is coming through a hole in the ceiling. To the west a flight of stairs leads downward.",
+    "exits": {
+      "west": 2
+    },
+    "features": [{
+      "name": "door",
+      "description": "There's a door to the east.",
+      "detailedDescription": "A sturdy wooden door, banded with iron. It's locked.",
+      "customClass": "Door"
+    },{
+      "name": "kazoo",
+      "description": "There is a kazoo on the floor.",
+      "detailedDescription": "A red kazoo. It's a little dusty.",
+      "isItem": true,
+      "customClass": "Kazoo"
     }]
+  },{
+    "id": 2,
+    "description": "You are on the landing.",
+    "detailedDescription": "There is a landing after about fifty steps. To the north the stairs continue down; to the east the stairs continue up.",
+    "exits": {
+      "north": 4,
+      "east": 1
+    },
+    "features": [{
+      "name": "brazier",
+      "description": "The landing is lit by a brazier on the wall.",
+      "detailedDescription": "A lit brazier with an open flame. Watch it--it's hot.",
+      "customClass": "Brazier"
+    }]
+  },{
+    "id": 3,
+    "description": "You are in a closet.",
+    "detailedDescription": "You're in a small closet. From the looks of things it was a storage room at one point but hasn't be used in some time.",
+    "exits": {
+      "west": 1
+    },
+    "features": [{
+      "name": "torch",
+      "description": "There's a torch on a shelf.",
+      "detailedDescription": "It's an unlit torch.",
+      "isItem": true,
+      "customClass": "Torch"
+    }]
+  },{
+    "id": 4,
+    "description": "You're in what appears to be a castle dungeon.",
+    "detailedDescription": "Chains hang from the walls, and there are several small cells with mostly rotten doors.",
+    "exits": {
+      "west": 5,
+      "north": 6,
+      "east": 8,
+      "south": 2
+    }
+  },{
+    "id": 5,
+    "description": "You are in one of the cells.",
+    "detailedDescription": "Manacles hang from a rusty peg in the wall.",
+    "exits": {
+      "east": 4
+    },
+    "features": [{
+      "name": "rags",
+      "description": "There's a pile of rags in the corner.",
+      "detailedDescription": "An old pile of rags, probably once used as a bed. There's a key underneath.",
+      "customClass": "Rags"
+    }]
+  },{
+    "id": 6,
+    "description": "You are in one of the cells.",
+    "detailedDescription": "The broken remains of a wooden cot stand against one wall.",
+    "exits": {
+      "south": 4
+    },
+    "features": [{
+      "name": "obstacle",
+      "description": "An obstacle sits against the far wall.",
+      "detailedDescription": "It's an obstacle. You should probably try to move it.",
+      "customClass": "Obstacle"
+    }]
+  },{
+    "id": 7,
+    "description": "You are in an oubliette.",
+    "detailedDescription": "Faint light is coming through a hole in the ceiling. You scream, but no one hears you...",
+    "customClass": "oubliette"
+  },{
+    "id": 8,
+    "description": "You step into one of the cells, but as you do you hear a distinct 'click.' The floor gives way underneath your feet, and you fall a dozen feet into a pit.\n",
+    "detailedDescription": "",
+    "exits": {
+      "west": 4
+    },
+    "features": [{
+      "name": "crystal",
+      "description": "There's a crystal on the table.",
+      "detailedDescription": "A small purple crystal. The soft glow seems to pulse slowly.",
+      "isItem": true,
+      "customClass": "Crystal"
+    }],
+    "customClass": "TrapRoom"
+  },{
+    "id": 9,
+    "description": "You are in a large cavern.",
+    "detailedDescription": "Crystals embedded in the rock around you glow a soft purple, illuminating the area. Several tunnels branch off from the main cavern.",
+    "exits": {
+      "east": 14,
+      "south": 6,
+      "west": 10
+    }
+  },{
+    "id": 10,
+    "description": "You are in a cave.",
+    "detailedDescription": "A large stalagmite fills one corner of the room.",
+    "customClass": "Cave",
+    "exits": {
+      "north": 11,
+      "east": 9,
+      "west": 9
+    }
+  },{
+    "id": 11,
+    "description": "You are in a cave.",
+    "detailedDescription": "You hear water dripping from somewhere up above.",
+    "customClass": "Cave",
+    "exits": {
+      "north": 15,
+      "east": 12,
+      "south": 10,
+      "west": 8
+    }
+  },{
+    "id": 12,
+    "description": "You are in a cave.",
+    "detailedDescription": "A small stream splashes out of a fissure in the cave wall, then disappears down a crack at the base of a stalagmite.",
+    "customClass": "Cave",
+    "exits": {
+      "north": 13,
+      "east": 9,
+      "west": 10
+    }
+  },{
+    "id": 13,
+    "description": "You are in a cave.",
+    "detailedDescription": "Stalagmites and stalactites cover the floor and ceiling. The sound of dripping water is constant in this room.",
+    "customClass": "Cave",
+    "exits": {
+      "north": 16,
+      "east": 9,
+      "south": 11,
+      "west": 13
+    }
+  },{
+    "id": 14,
+    "description": "You are in a cave.",
+    "detailedDescription": "The floor is sandy here.",
+    "customClass": "Cave",
+    "exits": {
+      "east": 12,
+      "south": 9
+    }
+  },{
+    "id": 15,
+    "description": "You are in a cave.",
+    "detailedDescription": "To the south you see worked stone peeking through the living rock in places.",
+    "customClass": "Cave",
+    "exits": {
+      "north": 13,
+      "east": 10
+    }
+  },{
+    "id": 16,
+    "description": "You are in some kind of shrine.",
+    "detailedDescription": "The room is brightly lit with glowing purple crystals.",
+    "exits": {
+      "south": 12
+    },
+    "features": [{
+      "name": "pedestal",
+      "description": "There is a pedestal in the middle of the room.",
+      "detailedDescription": "A pedestal formed from a cluster of glowing purple crystals. It looks like something small is meant to be placed on top.",
+      "customClass": "Pedestal"
+    }]
+  }]
 }

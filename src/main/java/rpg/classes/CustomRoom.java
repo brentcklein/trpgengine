@@ -1,4 +1,4 @@
-package rpg.custom;
+package rpg.classes;
 
 import rpg.classes.Feature;
 import rpg.classes.Room;

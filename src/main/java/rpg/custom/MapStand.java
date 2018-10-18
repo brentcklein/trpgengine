@@ -1,6 +1,7 @@
 package rpg.custom;
 
 import rpg.classes.ActionSet;
+import rpg.classes.CustomFeature;
 import rpg.classes.State;
 
 public class MapStand extends CustomFeature {

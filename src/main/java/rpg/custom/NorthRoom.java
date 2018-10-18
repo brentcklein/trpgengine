@@ -1,6 +1,7 @@
 package rpg.custom;
 
 import rpg.classes.ActionSet;
+import rpg.classes.CustomRoom;
 import rpg.classes.Feature;
 import rpg.classes.State;
 
