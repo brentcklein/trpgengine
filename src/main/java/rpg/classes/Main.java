@@ -1,27 +1,12 @@
 package rpg.classes;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
 import java.util.*;
-
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-
-import static java.util.Optional.ofNullable;
 
 public class Main {
 
-    // TODO: clean up this rat's nest
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
-
-        Optional<State> stateOptional = Optional.empty();
-        ArrayList<Room> roomArrayList = new ArrayList<>();
 
         String filename = "config.json";
 
@@ -31,125 +16,7 @@ public class Main {
             filename = "simple.example.config.json";
         }
 
-        // parse json config here
-        Gson g = new Gson();
-        JsonParser j = new JsonParser();
-
-        File file = new File("config/"+filename);
-        try (FileReader fr = new FileReader(file)) {
-            JsonObject object = j.parse(fr).getAsJsonObject();
-
-            for (JsonElement room :
-                    object.getAsJsonArray("rooms")) {
-
-                JsonObject roomAsJsonObject = room.getAsJsonObject();
-
-                Set<Feature> features = new HashSet<>();
-
-                if (roomAsJsonObject.getAsJsonArray("features") != null) {
-                    for (JsonElement jsonFeature:
-                            roomAsJsonObject.getAsJsonArray("features")) {
-                        JsonObject featureAsJsonObject = jsonFeature.getAsJsonObject();
-
-                        // TODO: wrap gson library to always return Optionals
-                        // TODO: Refactor class handling into separate class
-
-
-                        Class<? extends Feature> featureClass;
-                        if (ofNullable(featureAsJsonObject.get("isItem"))
-                                .map(JsonElement::getAsBoolean).orElse(false)) {
-                            featureClass = Item.class;
-                        } else {
-                            featureClass = Feature.class;
-                        }
-                        Class<? extends Feature> itemClass = ofNullable(featureAsJsonObject.get("customClass"))
-                                .map(m -> g.fromJson(m,String.class))
-                                .<Class<? extends Feature>>map(s -> {
-                                    try {
-                                        Class<?> c = Class.forName("rpg.custom." + s);
-                                        if (!featureClass.isAssignableFrom(c)) {
-                                            throw new ClassNotFoundException();
-                                        } else {
-                                            return c.asSubclass(Feature.class);
-                                        }
-                                    } catch (ClassNotFoundException cnf) {
-                                        return null;
-                                    }
-                                })
-                                .orElse(featureClass);
-                        features.add(g.fromJson(jsonFeature, itemClass));
-                    }
-                }
-
-                Boolean isEnd = ofNullable(roomAsJsonObject.get("isEnd"))
-                        .map(JsonElement::getAsBoolean).orElse(false);
-
-                HashMap<String,Integer> exits;
-                Type type = new TypeToken<HashMap<String,Integer>>(){}.getType();
-
-                // TODO: Error checking
-                exits = Optional.ofNullable(roomAsJsonObject.get("exits"))
-                        .map(rjo -> g.<HashMap<String,Integer>>fromJson(rjo,type))
-                        .orElse(new HashMap<>());
-
-                Class<? extends Room> roomClass = ofNullable(roomAsJsonObject.get("customClass"))
-                        .map(m -> g.fromJson(m,String.class))
-                        .<Class<? extends Room>>map(s -> {
-                            try {
-                                Class<?> c = Class.forName("rpg.custom." + s);
-                                if (!Room.class.isAssignableFrom(c)) {
-                                    throw new ClassNotFoundException();
-                                } else {
-                                    return c.asSubclass(Room.class);
-                                }
-                            } catch (ClassNotFoundException cnf) {
-                                return null;
-                            }
-                        })
-                        .orElse(Room.class);
-
-                // TODO: this....better
-                try {
-                    Constructor constructor = roomClass.getConstructor(
-                            Integer.class,
-                            String.class,
-                            String.class,
-                            Set.class,
-                            Map.class,
-                            boolean.class,
-                            boolean.class);
-
-                    // TODO: don't cast
-                    roomArrayList.add((Room)constructor.newInstance(
-                            roomAsJsonObject.get("id").getAsInt(),
-                            roomAsJsonObject.get("description").getAsString(),
-                            roomAsJsonObject.get("detailedDescription").getAsString(),
-                            features,
-                            exits,
-                            false,
-                            isEnd
-                    ));
-                } catch (NoSuchMethodException nsm) {
-                    System.err.println(nsm.getMessage());
-                    System.exit(6);
-                } catch (InstantiationException ie) {
-                    System.exit(7);
-                } catch (IllegalAccessException iae) {
-                    System.exit(8);
-                } catch (InvocationTargetException ite) {
-                    System.exit(9);
-                }
-            }
-
-            stateOptional = Optional.of(new State(object.get("start").getAsInt(), roomArrayList.toArray(new Room[0])));
-        } catch (IOException ioee) {
-            System.exit(1);
-        }
-
-        if (!stateOptional.isPresent()) {
-            System.exit(1);
-        }
-        State s = stateOptional.get();
+        State s = WorldBuilder.getNewState(filename).get();
 
         while (!s.gameOver) {
             System.out.println(s.currentRoom.getDescription());
