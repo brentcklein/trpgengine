@@ -67,12 +67,11 @@ public class WorldBuilder {
             Boolean isEnd = ofNullable(room.get("isEnd"))
                     .map(JsonElement::getAsBoolean).orElse(false);
 
-            HashMap<String,Integer> exits;
-            Type type = new TypeToken<HashMap<String,Integer>>(){}.getType();
+            Type exitsType = new TypeToken<HashMap<String,Integer>>(){}.getType();
 
             // TODO: Error checking
-            exits = Optional.ofNullable(room.get("exits"))
-                    .map(e -> g.<HashMap<String,Integer>>fromJson(e,type))
+            HashMap<String,Integer> exits = Optional.ofNullable(room.get("exits"))
+                    .map(e -> g.<HashMap<String,Integer>>fromJson(e,exitsType))
                     .orElse(new HashMap<>());
 
             Class<?> roomClass = getCustomClassForObject(room, Room.class);
