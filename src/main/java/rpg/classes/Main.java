@@ -15,7 +15,6 @@ import org.reflections.Reflections;
 
 import static java.util.Optional.ofNullable;
 
-
 public class Main {
 
     // TODO: clean up this rat's nest
@@ -42,8 +41,8 @@ public class Main {
 
         // TODO: figure out how to treat all custom classes the same. Implement a common interface?
         Set<Class<? extends CustomRoom>> roomClasses = reflections.getSubTypesOf(CustomRoom.class);
-        Set<Class<? extends CustomFeature>> featureClasses = reflections.getSubTypesOf(CustomFeature.class);
-        Set<Class<? extends CustomItem>> itemClasses = reflections.getSubTypesOf(CustomItem.class);
+
+//        Class.forName("rpg.custom.Compass"); check instanceof
 
         File file = new File("config/"+filename);
         try (FileReader fr = new FileReader(file)) {
@@ -60,28 +59,34 @@ public class Main {
                     for (JsonElement jsonFeature:
                             roomAsJsonObject.getAsJsonArray("features")) {
                         JsonObject featureAsJsonObject = jsonFeature.getAsJsonObject();
+
                         // TODO: wrap gson library to always return Optionals
+                        // TODO: Refactor class handling into separate class
+
+
+                        Class<? extends Feature> featureClass;
                         if (ofNullable(featureAsJsonObject.get("isItem"))
                                 .map(JsonElement::getAsBoolean).orElse(false)) {
-
-                            // TODO: Refactor class handling into separate class
-                            Class<? extends Item> itemClass = ofNullable(featureAsJsonObject.get("customClass"))
-                                    .map(m -> g.fromJson(m,String.class))
-                                    .<Class<? extends Item>>flatMap(s -> itemClasses.stream()
-                                            .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
-                                            .findFirst())
-                                    .orElse(Item.class);
-                            features.add(g.fromJson(jsonFeature, itemClass));
+                            featureClass = Item.class;
                         } else {
-                            // TODO: Refactor class handling into separate class
-                            Class<? extends Feature> featureClass = ofNullable(featureAsJsonObject.get("customClass"))
-                                    .map(m -> g.fromJson(m,String.class))
-                                    .<Class<? extends Feature>>flatMap(s -> featureClasses.stream()
-                                            .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
-                                            .findFirst())
-                                    .orElse(Feature.class);
-                            features.add(g.fromJson(jsonFeature, featureClass));
+                            featureClass = Feature.class;
                         }
+                        Class<? extends Feature> itemClass = ofNullable(featureAsJsonObject.get("customClass"))
+                                .map(m -> g.fromJson(m,String.class))
+                                .<Class<? extends Feature>>map(s -> {
+                                    try {
+                                        Class<?> c = Class.forName("rpg.custom." + s);
+                                        if (!featureClass.isAssignableFrom(c)) {
+                                            throw new ClassNotFoundException();
+                                        } else {
+                                            return c.asSubclass(Feature.class);
+                                        }
+                                    } catch (ClassNotFoundException cnf) {
+                                        return null;
+                                    }
+                                })
+                                .orElse(featureClass);
+                        features.add(g.fromJson(jsonFeature, itemClass));
                     }
                 }
 
@@ -125,7 +130,7 @@ public class Main {
                             isEnd
                     ));
                 } catch (NoSuchMethodException nsm) {
-                    System.out.println(nsm.getMessage());
+                    System.err.println(nsm.getMessage());
                     System.exit(6);
                 } catch (InstantiationException ie) {
                     System.exit(7);
@@ -163,24 +168,22 @@ public class Main {
                 Optional<ActionSet> actionSetOptional = InputParser.parseInput(input);
 
                 actionSetOptional.ifPresentOrElse(
-                        (actionSet -> {
+                        // How do we make sure we don't run into collisions between the names of items and features?
+                        actionSet -> {
                             Optional<Feature> optionalFeature =
                                     s.currentRoom.getFeatures().stream().filter(
                                             (f) -> f.getName().equals(actionSet.getSubjectOptional().get())).findAny();
                             Optional<Item> optionalItem = optionalFeature.filter((f) -> f instanceof Item).map((f) -> (Item)f);
                             Optional<Item> optionalInventoryItem = s.player.getItem(actionSet.getSubjectOptional().get());
+                            // TODO: refactor to use reflection instead of switch?
                             switch (actionSet.getVerbOptional().get()) {
                                 case "go":
                                 case "head":
                                 case "travel":
 
                                     actionSet.getSubjectOptional()
-                                            .flatMap((x) -> {
-                                                return s.currentRoom.getAdjacentRoom(x);
-                                            })
-                                            .flatMap((x) -> {
-                                                return s.getRoomOptional(x);
-                                            })
+                                            .flatMap(s.currentRoom::getAdjacentRoom)
+                                            .flatMap(s::getRoomOptional)
                                             .ifPresentOrElse(
                                                     (d) -> d.goTo(actionSet, s),
                                                     () -> System.out.println("There is not an exit in that direction."));
@@ -222,7 +225,7 @@ public class Main {
                                                     () -> System.out.println("You can't do that."));
                                     break;
                             }
-                        }),
+                        },
                         () -> System.out.println("You can't do that."));
             }
         }
