@@ -87,7 +87,7 @@
     "id": 7,
     "description": "You are in an oubliette.",
     "detailedDescription": "Faint light is coming through a hole in the ceiling. You scream, but no one hears you...",
-    "customClass": "oubliette"
+    "customClass": "Oubliette"
   },{
     "id": 8,
     "description": "You step into one of the cells, but as you do you hear a distinct 'click.' The floor gives way underneath your feet, and you fall a dozen feet into a pit.\n",
