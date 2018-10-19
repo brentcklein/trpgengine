@@ -11,8 +11,6 @@ import java.util.*;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 
-import org.reflections.Reflections;
-
 import static java.util.Optional.ofNullable;
 
 public class Main {
@@ -36,13 +34,6 @@ public class Main {
         // parse json config here
         Gson g = new Gson();
         JsonParser j = new JsonParser();
-
-        Reflections reflections = new Reflections("rpg.custom");
-
-        // TODO: figure out how to treat all custom classes the same. Implement a common interface?
-        Set<Class<? extends CustomRoom>> roomClasses = reflections.getSubTypesOf(CustomRoom.class);
-
-//        Class.forName("rpg.custom.Compass"); check instanceof
 
         File file = new File("config/"+filename);
         try (FileReader fr = new FileReader(file)) {
@@ -103,9 +94,18 @@ public class Main {
 
                 Class<? extends Room> roomClass = ofNullable(roomAsJsonObject.get("customClass"))
                         .map(m -> g.fromJson(m,String.class))
-                        .<Class<? extends Room>>flatMap(s -> roomClasses.stream()
-                                .filter(i -> s.equalsIgnoreCase(i.getSimpleName()))
-                                .findFirst())
+                        .<Class<? extends Room>>map(s -> {
+                            try {
+                                Class<?> c = Class.forName("rpg.custom." + s);
+                                if (!Room.class.isAssignableFrom(c)) {
+                                    throw new ClassNotFoundException();
+                                } else {
+                                    return c.asSubclass(Room.class);
+                                }
+                            } catch (ClassNotFoundException cnf) {
+                                return null;
+                            }
+                        })
                         .orElse(Room.class);
 
                 // TODO: this....better
