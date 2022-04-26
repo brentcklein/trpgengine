@@ -1,8 +1,5 @@
 package rpg.classes;
 
-import rpg.classes.Feature;
-import rpg.classes.Room;
-
 import java.util.Map;
 import java.util.Set;
 

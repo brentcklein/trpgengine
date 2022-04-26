@@ -78,7 +78,7 @@ public class WorldBuilder {
 
             // TODO: this....better
             try {
-                Constructor constructor = roomClass.getConstructor(
+                Constructor<?> constructor = roomClass.getConstructor(
                         Integer.class,
                         String.class,
                         String.class,
