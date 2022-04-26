@@ -5,12 +5,13 @@
     "description": "You're in a cell made of stone.",
     "detailedDescription": "Light is coming through a hole in the ceiling.",
     "features": [{
+      "id": 1,
       "name": "door",
       "description": "There's a door to the west.",
       "detailedDescription": "A rotting wooden door. Despite its apparent age, it still looks strong.",
       "customClass": "AsylumCellDoor"
     }, {
-      "id": "1",
+      "id": 2,
       "name": "key",
       "description": "A key sits on the floor in the middle of the pool of light coming through the hole in the ceiling.",
       "detailedDescription": "Key to a cell in the Undead Asylum.",
