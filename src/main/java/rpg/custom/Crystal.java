@@ -5,8 +5,8 @@ import rpg.classes.CustomItem;
 import rpg.classes.State;
 
 public class Crystal extends CustomItem {
-    public Crystal(String name, String description, String longDescription) {
-        super(name, description, longDescription);
+    public Crystal(Integer id, String name, String description, String longDescription) {
+        super(id, name, description, longDescription);
     }
 
     @Override

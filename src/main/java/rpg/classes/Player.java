@@ -24,4 +24,8 @@ public class Player {
     public Optional<Item> getItem (String itemName) {
         return inventory.stream().filter((f) -> f.getName().equals(itemName)).findAny();
     }
+
+    public Optional<Item> getItemById (Integer id) {
+        return inventory.stream().filter((f) -> f.getId().equals(id)).findAny();
+    }
 }

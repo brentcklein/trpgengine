@@ -8,8 +8,8 @@ import rpg.classes.State;
 import java.util.Optional;
 
 public class Torch extends CustomItem {
-    public Torch(String name, String description, String longDescription) {
-        super(name, description, longDescription);
+    public Torch(Integer id, String name, String description, String longDescription) {
+        super(id, name, description, longDescription);
     }
 
     @Override

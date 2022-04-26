@@ -6,8 +6,8 @@ import rpg.classes.Item;
 import rpg.classes.State;
 
 public class Brazier extends CustomFeature {
-    public Brazier(String name, String description, String detailedDescription) {
-        super(name, description, detailedDescription);
+    public Brazier(Integer id, String name, String description, String detailedDescription) {
+        super(id, name, description, detailedDescription);
     }
 
     @Override

@@ -3,8 +3,8 @@ package rpg.classes;
 import java.util.Optional;
 
 public class Item extends Feature {
-    public Item(String name, String description, String longDescription) {
-        super(name, description, longDescription);
+    public Item(Integer id, String name, String description, String longDescription) {
+        super(id, name, description, longDescription);
     }
 
     public void take(ActionSet actionSet, State s) {

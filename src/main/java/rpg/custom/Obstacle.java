@@ -7,8 +7,8 @@ import rpg.classes.State;
 import java.util.Map;
 
 public class Obstacle extends CustomFeature {
-    public Obstacle(String name, String description, String detailedDescription) {
-        super(name, description, detailedDescription);
+    public Obstacle(Integer id, String name, String description, String detailedDescription) {
+        super(id, name, description, detailedDescription);
     }
 
     @Override

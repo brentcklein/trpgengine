@@ -10,9 +10,11 @@
       "detailedDescription": "A rotting wooden door. Despite its apparent age, it still looks strong.",
       "customClass": "AsylumCellDoor"
     }, {
-      "name": "Asylum Cell Key",
+      "id": "1",
+      "name": "key",
       "description": "A key sits on the floor in the middle of the pool of light coming through the hole in the ceiling.",
-      "detailedDescription": "Key to a cell in the Undead Asylum."
+      "detailedDescription": "Key to a cell in the Undead Asylum.",
+      "customClass": "AsylumCellKey"
     }]
   }]
 }

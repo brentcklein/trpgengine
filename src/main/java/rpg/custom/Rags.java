@@ -6,8 +6,8 @@ import rpg.classes.Item;
 import rpg.classes.State;
 
 public class Rags extends CustomFeature {
-    public Rags(String name, String description, String detailedDescription) {
-        super(name, description, detailedDescription);
+    public Rags(Integer id, String name, String description, String detailedDescription) {
+        super(id, name, description, detailedDescription);
     }
 
     @Override
@@ -16,6 +16,7 @@ public class Rags extends CustomFeature {
         this.setDetailedDescription("An old pile of rags, probably once used as a bed.");
         if (!this.isActivated()) {
             s.currentRoom.addFeature(new Item(
+                    1,
                     "key",
                     "There's a key on the floor.",
                     "A small key."

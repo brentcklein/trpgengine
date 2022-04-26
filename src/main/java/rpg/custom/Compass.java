@@ -5,8 +5,8 @@ import rpg.classes.CustomItem;
 import rpg.classes.State;
 
 public class Compass extends CustomItem {
-    public Compass(String name, String description, String longDescription) {
-        super(name, description, longDescription);
+    public Compass(Integer id, String name, String description, String longDescription) {
+        super(id, name, description, longDescription);
     }
 
     @Override

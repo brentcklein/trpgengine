@@ -2,9 +2,14 @@ package rpg.classes;
 
 public abstract class NamedObject {
 
+    protected Integer id;
     protected String name;
     protected String description;
     protected String detailedDescription;
+
+    public Integer getId() {
+      return id;
+    }
 
     public void setName(String name) { this.name = name; }
 

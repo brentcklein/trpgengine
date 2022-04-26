@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class Door extends CustomFeature {
-    public Door(String name, String description, String detailedDescription) {
-        super(name, description, detailedDescription);
+    public Door(Integer id, String name, String description, String detailedDescription) {
+        super(id, name, description, detailedDescription);
     }
 
     @Override

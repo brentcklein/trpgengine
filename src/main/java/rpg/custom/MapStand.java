@@ -5,8 +5,8 @@ import rpg.classes.CustomFeature;
 import rpg.classes.State;
 
 public class MapStand extends CustomFeature {
-    public MapStand(String name, String description, String detailedDescription) {
-        super(name, description, detailedDescription);
+    public MapStand(Integer id, String name, String description, String detailedDescription) {
+        super(id, name, description, detailedDescription);
     }
 
     @Override

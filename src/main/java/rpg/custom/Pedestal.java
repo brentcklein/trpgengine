@@ -6,8 +6,8 @@ import rpg.classes.Item;
 import rpg.classes.State;
 
 public class Pedestal extends CustomFeature {
-    public Pedestal(String name, String description, String detailedDescription) {
-        super(name, description, detailedDescription);
+    public Pedestal(Integer id, String name, String description, String detailedDescription) {
+        super(id, name, description, detailedDescription);
     }
 
     @Override

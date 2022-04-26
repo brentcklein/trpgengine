@@ -5,8 +5,8 @@ import rpg.classes.CustomItem;
 import rpg.classes.State;
 
 public class Kazoo extends CustomItem {
-    public Kazoo(String name, String description, String longDescription) {
-        super(name, description, longDescription);
+    public Kazoo(Integer id, String name, String description, String longDescription) {
+        super(id, name, description, longDescription);
     }
 
     @Override
