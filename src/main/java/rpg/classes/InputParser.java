@@ -9,6 +9,7 @@ public class InputParser {
     public static Optional<ActionSet> parseInput(String input) {
 
         ActionSet actionSet = new ActionSet(getWords(input));
+        String[] directions = {"north", "south", "east", "west", "up", "down"};
 
         if (actionSet.getVerbOptional().isPresent() &&
                 ((actionSet.getVerbOptional().get().equals("look") || actionSet.getVerbOptional().get().equals("examine")) &&
@@ -16,6 +17,13 @@ public class InputParser {
             String[] words = new String[2];
             Array.set(words,0, actionSet.getVerbOptional().get());
             Array.set(words,1,"room");
+            return Optional.of(new ActionSet(words));
+        } else if (actionSet.getSubjectOptional().isPresent() &&
+                !actionSet.getVerbOptional().isPresent() &&
+                Arrays.stream(directions).anyMatch(actionSet.getSubjectOptional().get()::equals)) {
+            String[] words = new String[2];
+            Array.set(words, 0, "go");
+            Array.set(words, 1, actionSet.getSubjectOptional().get());
             return Optional.of(new ActionSet(words));
         } else if (actionSet.getSubjectOptional().isPresent()) {
             return Optional.of(actionSet);
