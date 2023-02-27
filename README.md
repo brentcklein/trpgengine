@@ -5,11 +5,11 @@ Java engine for a text-based rpg.
 1. Modify the run configuration for `rpg.classes.Main` to include the command line argument `example`.
 2. Run `rpg.classes.Main` from IntelliJ to run the example dungeon.
 ### Option 2: Manually
-Compile with Maven:
+1. Compile with Maven:
 ```shell
 mvn clean compile assembly:single
 ```
-Run the compiled jar with the argument `example` to run the example dungeon:
+2. Run the compiled jar with the argument `example` to run the example dungeon:
 ```shell
 java -jar target/TextBasedRPG-1.0-SNAPSHOT-jar-with-dependencies.jar "example"
 ```
