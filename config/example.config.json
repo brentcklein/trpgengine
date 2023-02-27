@@ -12,12 +12,6 @@
       "description": "There's a door to the east.",
       "detailedDescription": "A sturdy wooden door, banded with iron. It's locked.",
       "customClass": "Door"
-    },{
-      "name": "kazoo",
-      "description": "There is a kazoo on the floor.",
-      "detailedDescription": "A red kazoo. It's a little dusty.",
-      "isItem": true,
-      "customClass": "Kazoo"
     }]
   },{
     "id": 2,
@@ -56,7 +50,14 @@
       "north": 6,
       "east": 8,
       "south": 2
-    }
+    },
+    "features": [{
+      "name": "kazoo",
+      "description": "There is a kazoo on the floor.",
+      "detailedDescription": "A red kazoo. It's a little dusty.",
+      "isItem": true,
+      "customClass": "Kazoo"
+    }]
   },{
     "id": 5,
     "description": "You are in one of the cells.",
