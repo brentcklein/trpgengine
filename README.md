@@ -25,3 +25,6 @@ java -jar target/TextBasedRPG-1.0-SNAPSHOT-jar-with-dependencies.jar "example"
 To use one object on another, the basic construction is `use <item> on <object>`, but feel free to experiment to get the outcome you want!
 
 As a shorthand, you can travel to an adjacent room by typing only the direction, eg: `east` is the same as `go east`.
+
+### Example Dungeon
+Explore your surroundings and reach the game-over screen! Make sure to `look` around each room for clues.
