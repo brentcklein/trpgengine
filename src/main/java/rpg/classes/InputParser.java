@@ -18,12 +18,12 @@ public class InputParser {
             Array.set(words,0, actionSet.getVerbOptional().get());
             Array.set(words,1,"room");
             return Optional.of(new ActionSet(words));
-        } else if (actionSet.getSubjectOptional().isPresent() &&
-                !actionSet.getVerbOptional().isPresent() &&
-                Arrays.stream(directions).anyMatch(actionSet.getSubjectOptional().get()::equals)) {
+        } else if (actionSet.getVerbOptional().isPresent() &&
+                !actionSet.getSubjectOptional().isPresent() &&
+                Arrays.stream(directions).anyMatch(actionSet.getVerbOptional().get()::equals)) {
             String[] words = new String[2];
             Array.set(words, 0, "go");
-            Array.set(words, 1, actionSet.getSubjectOptional().get());
+            Array.set(words, 1, actionSet.getVerbOptional().get());
             return Optional.of(new ActionSet(words));
         } else if (actionSet.getSubjectOptional().isPresent()) {
             return Optional.of(actionSet);
